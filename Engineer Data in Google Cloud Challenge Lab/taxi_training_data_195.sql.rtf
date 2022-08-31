@@ -1,0 +1,43 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2638
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red39\green78\blue204;\red255\green255\blue254;\red0\green0\blue0;
+\red21\green129\blue62;\red42\green55\blue62;\red238\green57\blue24;}
+{\*\expandedcolortbl;;\cssrgb\c20000\c40392\c83922;\cssrgb\c100000\c100000\c99608;\cssrgb\c0\c0\c0;
+\cssrgb\c5098\c56471\c30980;\cssrgb\c21569\c27843\c30980;\cssrgb\c95686\c31765\c11765;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww12100\viewh7660\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 create\cf0 \strokec4  \cf2 \strokec2 or\cf0 \strokec4  \cf2 \strokec2 replace\cf0 \strokec4  \cf2 \strokec2 table\cf0 \strokec4  \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb3   \cf5 \strokec5 `qwiklabs-gcp-00-2585f8297074.taxirides.taxi_training_data_195`\cf0 \strokec4  \cb1 \
+\cb3   \cf2 \strokec2 as\cf0 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 SELECT\cf0 \strokec4  \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb3   pickup_datetime, \cb1 \
+\cb3   pickup_longitude \cf2 \strokec2 as\cf0 \strokec4  pickuplon, \cb1 \
+\cb3   pickup_latitude \cf2 \strokec2 as\cf0 \strokec4  pickuplat, \cb1 \
+\cb3   dropoff_longitude dropofflon, \cb1 \
+\cb3   dropoff_latitude \cf2 \strokec2 as\cf0 \strokec4  dropofflat, \cb1 \
+\cb3   passenger_count \cf2 \strokec2 as\cf0 \strokec4  passengers,\cb1 \
+\cb3   total_amount \cf6 \strokec6 +\cf0 \strokec4  tolls_amount \cf6 \strokec6 +\cf0 \strokec4  fare_amount \cf2 \strokec2 as\cf0 \strokec4  fare_amount_213\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 FROM\cf0 \strokec4  \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb3   \cf5 \strokec5 `qwiklabs-gcp-00-2585f8297074.taxirides.historical_taxi_rides_raw`\cf0 \strokec4  \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 where\cf0 \strokec4  \cf2 \strokec2 true\cf0 \strokec4  \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb3   \cf2 \strokec2 and\cf0 \strokec4  pickup_datetime \cf6 \strokec6 >\cf0 \strokec4  \cf5 \strokec5 '2014-01-01'\cf0 \cb1 \strokec4 \
+\cb3   \cf2 \strokec2 and\cf0 \strokec4  trip_distance \cf6 \strokec6 >\cf0 \strokec4  \cf7 \strokec7 0\cf0 \cb1 \strokec4 \
+\cb3   \cf2 \strokec2 and\cf0 \strokec4  fare_amount \cf6 \strokec6 >\cf0 \strokec4  \cf7 \strokec7 3.0\cf0 \cb1 \strokec4 \
+\cb3   \cf2 \strokec2 and\cf0 \strokec4  passenger_count \cf6 \strokec6 >\cf0 \strokec4  \cf7 \strokec7 0\cf0 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 order\cf0 \strokec4  \cf2 \strokec2 by\cf0 \strokec4  \cf7 \strokec7 1\cf0 \strokec4  \cf2 \strokec2 desc\cf0 \cb1 \strokec4 \
+\cf2 \cb3 \strokec2 LIMIT\cf0 \strokec4  \cf7 \strokec7 1000000\cf0 \cb1 \strokec4 \
+\
+}
