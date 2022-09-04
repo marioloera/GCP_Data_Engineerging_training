@@ -1,3 +1,4 @@
+# better to create manually because default zone
 MACHINE_NAME=nucleus-jumphost-722
 MACHINE_TYPE=f1-micro
 
