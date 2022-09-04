@@ -1,7 +1,12 @@
+RULE_NAME=permit-tcp-rule-426
+MACHINE_TYPE=n1-standard-1 
+ZONE=us-west4-c
+REGION=us-west4
+
 # Task 3. Create an HTTP load balancer
 # Set the default region and zone for all resources
-gcloud config set compute/zone
-gcloud config set compute/region
+gcloud config set compute/zone $ZONE
+gcloud config set compute/region $REGION
 
 # To set up a load balancer with a Compute Engine backend, your VMs need to be in an instance group. 
 # The managed instance group provides VMs running the backend servers of an external HTTP load balancer.
@@ -9,11 +14,11 @@ gcloud config set compute/region
 
 # First, create the load balancer template:
 gcloud compute instance-templates create lb-backend-template \
-   --region= \
+   --region=$REGION \
    --network=default \
    --subnet=default \
    --tags=allow-health-check \
-   --machine-type=e2-medium \
+   --machine-type=$MACHINE_TYPE \
    --image-family=debian-11 \
    --image-project=debian-cloud \
    --metadata=startup-script='#!/bin/bash
@@ -29,10 +34,10 @@ gcloud compute instance-templates create lb-backend-template \
 
 
 # Create a managed instance group based on the template:
-gcloud compute instance-groups managed create lb-backend-group --template=lb-backend-template --size=2 --zone= 
+gcloud compute instance-groups managed create lb-backend-group --template=lb-backend-template --size=2 --zone=$ZONE
 
-# Create the fw-allow-health-check firewall rule.
-gcloud compute firewall-rules create fw-allow-health-check \
+# Create the firewall rule.
+gcloud compute firewall-rules create $RULE_NAME \
   --network=default \
   --action=allow \
   --direction=ingress \
@@ -65,7 +70,7 @@ gcloud compute backend-services create web-backend-service \
 # Add your instance group as the backend to the backend service:
 gcloud compute backend-services add-backend web-backend-service \
   --instance-group=lb-backend-group \
-  --instance-group-zone= \
+  --instance-group-zone=$ZONE \
   --global
 
 # Create a URL map to route the incoming requests to the default backend service:
