@@ -2,8 +2,11 @@ MACHINE_NAME=www1
 MACHINE_TYPE=n1-standard-1
 ZONE=us-east1-b
 
-
-gcloud compute instances create $MACHINE_NAME --machine-type $MACHINE_TYPE --zone $ZONE
+gcloud compute instances create $MACHINE_NAME \
+    --machine-type $MACHINE_TYPE \
+    --zone $ZONE \
+    --tags http-server \
+    --network-interface=network-tier=PREMIUM,subnet=default
 
 -- SSH connect
 gcloud compute ssh $MACHINE_NAME --zone $ZONE
