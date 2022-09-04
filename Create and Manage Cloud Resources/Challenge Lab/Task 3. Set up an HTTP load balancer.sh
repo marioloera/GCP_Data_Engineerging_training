@@ -1,37 +1,38 @@
-RULE_NAME=permit-tcp-rule-426
+gcloud compute project-info describe --project $PROJECT_ID
+
+RULE_NAME=allow-tcp-rule-797
 MACHINE_TYPE=n1-standard-1 
-ZONE=us-west4-c
-REGION=us-west4
+ZONE=us-east1-b
+REGION=us-east1
 
 # Task 3. Create an HTTP load balancer
 # Set the default region and zone for all resources
-gcloud config set compute/zone $ZONE
-gcloud config set compute/region $REGION
+# gcloud config set compute/zone $ZONE
+# gcloud config set compute/region $REGION
 
 # To set up a load balancer with a Compute Engine backend, your VMs need to be in an instance group. 
 # The managed instance group provides VMs running the backend servers of an external HTTP load balancer.
 # For this lab, backends serve their own hostnames.
+
+# create a file to pass as startup-script for the nginx template
+cat << EOF > startup.sh
+#! /bin/bash
+apt-get update
+apt-get install -y nginx
+service nginx start
+sed -i -- 's/nginx/Google Cloud Platform - '"\$HOSTNAME"'/' /var/www/html/index.nginx-debian.html
+EOF
 
 # First, create the load balancer template:
 gcloud compute instance-templates create lb-backend-template \
    --region=$REGION \
    --network=default \
    --subnet=default \
-   --tags=allow-health-check \
+   --tags=allow-health-check,http-server \
    --machine-type=$MACHINE_TYPE \
    --image-family=debian-11 \
    --image-project=debian-cloud \
-   --metadata=startup-script='#!/bin/bash
-     apt-get update
-     apt-get install apache2 -y
-     a2ensite default-ssl
-     a2enmod ssl
-     vm_hostname="$(curl -H "Metadata-Flavor:Google" \
-     http://169.254.169.254/computeMetadata/v1/instance/name)"
-     echo "Page served from: $vm_hostname" | \
-     tee /var/www/html/index.html
-     systemctl restart apache2'
-
+   --metadata-from-file=startup-script=startup.sh
 
 # Create a managed instance group based on the template:
 gcloud compute instance-groups managed create lb-backend-group --template=lb-backend-template --size=2 --zone=$ZONE
