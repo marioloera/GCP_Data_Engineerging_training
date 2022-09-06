@@ -1,20 +1,25 @@
+# Setting Up Network and HTTP Load Balancers [ACE]
+PROJECT_ID=qwiklabs-gcp-02-7727890026b2
 gcloud compute project-info describe --project $PROJECT_ID
 
-RULE_NAME=allow-tcp-rule-797
-MACHINE_TYPE=n1-standard-1 
-ZONE=us-east1-b
+RULE_NAME=allow-tcp-rule-607
+MACHINE_TYPE=n1-standard-1
 REGION=us-east1
+ZONE=us-east1-b
 
-# Task 3. Create an HTTP load balancer
 # Set the default region and zone for all resources
-# gcloud config set compute/zone $ZONE
-# gcloud config set compute/region $REGION
+gcloud config set compute/region $REGION
+gcloud config set compute/zone $ZONE
 
-# To set up a load balancer with a Compute Engine backend, your VMs need to be in an instance group. 
-# The managed instance group provides VMs running the backend servers of an external HTTP load balancer.
-# For this lab, backends serve their own hostnames.
+# Create multiple web server instances
+# To simulate serving from a cluster of machines,
+# create a simple cluster of Nginx web servers to serve static content
+# using Instance Templates and Managed Instance Groups.
 
-# create a file to pass as startup-script for the nginx template
+
+#  create a startup script to be used by every virtual machine instance.
+# This script sets up the Nginx server upon startup:
+
 cat << EOF > startup.sh
 #! /bin/bash
 apt-get update
@@ -23,69 +28,79 @@ service nginx start
 sed -i -- 's/nginx/Google Cloud Platform - '"\$HOSTNAME"'/' /var/www/html/index.nginx-debian.html
 EOF
 
-# First, create the load balancer template:
-gcloud compute instance-templates create lb-backend-template \
-   --region=$REGION \
-   --network=default \
-   --subnet=default \
-   --tags=allow-health-check,http-server \
-   --machine-type=$MACHINE_TYPE \
-   --image-family=debian-11 \
-   --image-project=debian-cloud \
-   --metadata-from-file=startup-script=startup.sh
+# Create an instance template, which uses the startup script:
+gcloud compute instance-templates create nginx-template \
+         --machine-type $MACHINE_TYPE \
+         --metadata-from-file startup-script=startup.sh
 
-# Create a managed instance group based on the template:
-gcloud compute instance-groups managed create lb-backend-group --template=lb-backend-template --size=2 --zone=$ZONE
 
-# Create the firewall rule.
-gcloud compute firewall-rules create $RULE_NAME \
-  --network=default \
-  --action=allow \
-  --direction=ingress \
-  --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-  --target-tags=allow-health-check \
-  --rules=tcp:80
+# Create a target pool.
+# A target pool allows a single access point to all the instances in a group
+# and is necessary for load balancing in the future steps.
+gcloud compute target-pools create nginx-pool
 
-# Now that the instances are up and running
-# set up a global static external IP address that your customers use to reach your load balancer:
-gcloud compute addresses create lb-ipv4-1 \
-  --ip-version=IPV4 \
-  --global
+# Create a managed instance group using the instance template:
+gcloud compute instance-groups managed create nginx-group \
+    --base-instance-name nginx \
+    --size 2 \
+    --template nginx-template \
+    --target-pool nginx-pool
 
-# Note the IPv4 address that was reserved:
-gcloud compute addresses describe lb-ipv4-1 \
-  --format="get(address)" \
-  --global
+# list compute instances
+gcloud compute instances list
 
-# Create a health check for the load balancer:
-gcloud compute health-checks create http http-basic-check \
-  --port 80
+# Configure a firewall so that you can connect to the machines on port 80 via the EXTERNAL_IP addresses
+# gcloud compute firewall-rules create www-firewall --allow tcp:80
+gcloud compute firewall-rules create $RULE_NAME --allow tcp:80
+
+# 1. Create a Network Load Balancer
+# Create an L4 network load balancer targeting your instance group:
+gcloud compute forwarding-rules create nginx-lb \
+    --region $REGION \
+    --ports=80 \
+    --target-pool nginx-pool
+
+gcloud compute forwarding-rules list
+
+
+# 2. Create a HTTP(s) Load Balancer
+# Create a health check. Health checks verify that the instance is responding to HTTP or HTTPS traffic:
+gcloud compute http-health-checks create http-basic-check
+
+# Define an HTTP service and map a port name to the relevant port for the instance group. 
+# Now the load balancing service can forward traffic to the named port:
+gcloud compute instance-groups managed \
+    set-named-ports nginx-group \
+    --named-ports http:80
 
 # Create a backend service:
-gcloud compute backend-services create web-backend-service \
-  --protocol=HTTP \
-  --port-name=http \
-  --health-checks=http-basic-check \
-  --global
+gcloud compute backend-services create nginx-backend \
+      --protocol HTTP --http-health-checks http-basic-check --global
 
-# Add your instance group as the backend to the backend service:
-gcloud compute backend-services add-backend web-backend-service \
-  --instance-group=lb-backend-group \
-  --instance-group-zone=$ZONE \
-  --global
+# Add the instance group into the backend service:
+gcloud compute backend-services add-backend nginx-backend \
+    --instance-group nginx-group \
+    --instance-group-zone $ZONE \
+    --global
 
-# Create a URL map to route the incoming requests to the default backend service:
-gcloud compute url-maps create web-map-http \
-    --default-service web-backend-service
+# Create a default URL map that directs all incoming requests to all your instances:
+gcloud compute url-maps create web-map \
+    --default-service nginx-backend
 
 # Create a target HTTP proxy to route requests to your URL map:
 gcloud compute target-http-proxies create http-lb-proxy \
-    --url-map web-map-http
+    --url-map web-map
 
-# Create a global forwarding rule to route incoming requests to the proxy:
+# Create a global forwarding rule to handle and route incoming requests.
+# A forwarding rule sends traffic to a specific target HTTP or HTTPS proxy
+# depending on the IP address, IP protocol, and port specified.
+# The global forwarding rule does not support multiple ports.
 gcloud compute forwarding-rules create http-content-rule \
-    --address=lb-ipv4-1\
     --global \
-    --target-http-proxy=http-lb-proxy \
-    --ports=80
+    --target-http-proxy http-lb-proxy \
+    --ports 80
 
+gcloud compute forwarding-rules list
+
+# From the browser, you should be able to connect to http://IP_ADDRESS/. 
+# It may take three to five minutes.

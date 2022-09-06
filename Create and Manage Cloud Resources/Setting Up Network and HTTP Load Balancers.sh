@@ -1,9 +1,11 @@
 # Setting Up Network and HTTP Load Balancers [ACE]
+PROJECT_ID=qwiklabs-gcp-02-7727890026b2
+gcloud compute project-info describe --project $PROJECT_ID
 
-
-MACHINE_TYPE=e2-medium
-REGION=us-central1
-ZONE=us-central1-a
+RULE_NAME=allow-tcp-rule-607
+MACHINE_TYPE=n1-standard-1
+REGION=us-east1
+ZONE=us-east1-b
 
 # Set the default region and zone for all resources
 gcloud config set compute/region $REGION
@@ -28,6 +30,7 @@ EOF
 
 # Create an instance template, which uses the startup script:
 gcloud compute instance-templates create nginx-template \
+         --machine-type $MACHINE_TYPE \
          --metadata-from-file startup-script=startup.sh
 
 
@@ -47,12 +50,13 @@ gcloud compute instance-groups managed create nginx-group \
 gcloud compute instances list
 
 # Configure a firewall so that you can connect to the machines on port 80 via the EXTERNAL_IP addresses
-gcloud compute firewall-rules create www-firewall --allow tcp:80
+# gcloud compute firewall-rules create www-firewall --allow tcp:80
+gcloud compute firewall-rules create $RULE_NAME --allow tcp:80
 
 # 1. Create a Network Load Balancer
 # Create an L4 network load balancer targeting your instance group:
 gcloud compute forwarding-rules create nginx-lb \
-    --region us-central1 \
+    --region $REGION \
     --ports=80 \
     --target-pool nginx-pool
 
@@ -76,7 +80,7 @@ gcloud compute backend-services create nginx-backend \
 # Add the instance group into the backend service:
 gcloud compute backend-services add-backend nginx-backend \
     --instance-group nginx-group \
-    --instance-group-zone us-central1-a \
+    --instance-group-zone $ZONE \
     --global
 
 # Create a default URL map that directs all incoming requests to all your instances:
@@ -96,7 +100,6 @@ gcloud compute forwarding-rules create http-content-rule \
     --target-http-proxy http-lb-proxy \
     --ports 80
 
-# 
 gcloud compute forwarding-rules list
 
 # From the browser, you should be able to connect to http://IP_ADDRESS/. 
