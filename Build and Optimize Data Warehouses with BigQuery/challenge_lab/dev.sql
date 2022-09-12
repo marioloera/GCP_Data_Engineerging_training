@@ -41,3 +41,16 @@ SCHEMA_FILE=schema_oxford_policy_tracker.json
     bq update $DATASET_ID.$TABLE_ID $SCHEMA_FILE
 
 -- Task 3. Add country population data to the population column
+    UPDATE `covid_841.oxford_policy_tracker_549` AS t0
+    SET t0.population = t2.pop_data_2019
+    FROM (
+        SELECT DISTINCT country_territory_code, pop_data_2019
+        FROM `bigquery-public-data.covid19_ecdc.covid_19_geographic_distribution_worldwide`
+    ) AS t2
+    WHERE t0.alpha_3_code = t2.country_territory_code;
+
+-- Task 4. Add country area data to the country_area column
+    UPDATE `covid_841.oxford_policy_tracker_549` AS t0
+    SET t0.country_area = t2.country_area
+    FROM `bigquery-public-data.census_bureau_international.country_names_area` AS t2
+    WHERE t0.country_name = t2.country_name;
