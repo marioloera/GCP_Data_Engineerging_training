@@ -1,0 +1,40 @@
+[
+    {
+      "name": "population",
+      "type": "INTEGER"
+    },
+    {
+      "name": "country_area",
+      "type": "FLOAT"
+    },
+    {
+      "name": "mobility",
+      "type": "RECORD",
+      "fields":[
+        {
+            "name": "avg_retail",
+            "type": "FLOAT"
+        },
+        {
+            "name": "avg_grocery",
+            "type": "FLOAT"
+        },
+        {
+            "name": "avg_parks",
+            "type": "FLOAT"
+        },
+        {
+            "name": "avg_transit",
+            "type": "FLOAT"
+        },
+        {
+            "name": "avg_workplace",
+            "type": "FLOAT"
+        },
+        {
+            "name": "avg_residential",
+            "type": "FLOAT"
+        }
+      ]
+    }
+]
