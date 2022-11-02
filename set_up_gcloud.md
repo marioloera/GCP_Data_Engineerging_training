@@ -13,7 +13,9 @@
  1. Add it to your path or run:
 
  ```
- source ~/google-cloud-sdk/path.zsh.inc
+ echo $PATH
+ mv ~/google-cloud-sdk/path.zsh.inc /usr/local/bin/
+ source /usr/local/bin/google-cloud-sdk/path.zsh.inc
  ```
 
  1. Add Application Default Credentials:
