@@ -7,6 +7,9 @@ parser.add_argument("--bucket", help="bucket for input and output")
 args = parser.parse_args()
 BUCKET = args.bucket
 
+BUCKET = BUCKET.replace("gs://", "")
+print(f"{BUCKET=}")
+
 from pyspark.sql import SparkSession, SQLContext, Row
 
 spark = SparkSession.builder.appName("kdd").getOrCreate()
@@ -14,7 +17,9 @@ sc = spark.sparkContext
 # data_file = "hdfs:///kddcup.data_10_percent.gz"
 
 # gcs_bucket = "qwiklabs-gcp-03-e9987c6ce4d2"
+# data_file = f"gs://{BUCKET}//kddcup.data_10_percent.gz"
 data_file = f"gs://{BUCKET}//kddcup.data_10_percent.gz"
+
 
 raw_rdd = sc.textFile(data_file).cache()
 raw_rdd.take(5)

@@ -1,6 +1,6 @@
 #!/bin/bash
 echo CLUSTER_NAME $1 
-echo bucket $2
+echo BUCKET_NAME $2
 gcloud dataproc jobs submit pyspark \
        --cluster $1 \
        --region us-central1 \
