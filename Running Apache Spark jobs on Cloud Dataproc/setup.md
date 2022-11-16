@@ -23,6 +23,7 @@ The cluster should start in a few minutes. You can proceed to the next step with
 
 ## get project id and make bucket
  ```
+export CLUSTER_NAME=sparktodp
 export PROJECT_ID=$(gcloud info --format='value(config.project)')
 gsutil mb gs://$PROJECT_ID
  ```
@@ -31,6 +32,7 @@ gsutil mb gs://$PROJECT_ID
 ```
 wget https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld/kddcup.data_10_percent.gz
 gsutil cp kddcup.data_10_percent.gz gs://$PROJECT_ID/
+gsutil ls gs://$PROJECT_ID/
 ```
 
 
@@ -42,5 +44,5 @@ chmod +x submit_onejob.sh
 
 ## Launch the PySpark Analysis job:
 ```
-./submit_onejob.sh $PROJECT_ID
+./submit_onejob.sh $CLUSTER_NAME $PROJECT_ID
 ```

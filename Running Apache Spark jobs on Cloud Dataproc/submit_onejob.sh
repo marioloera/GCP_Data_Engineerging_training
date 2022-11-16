@@ -1,6 +1,8 @@
 #!/bin/bash
+echo CLUSTER_NAME $1 
+echo bucket $2
 gcloud dataproc jobs submit pyspark \
-       --cluster sparktodp \
+       --cluster $1 \
        --region us-central1 \
        spark_analysis.py \
-       -- --bucket=$1
+       -- --bucket=$2
